@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Simple HTML Marker - Azure Maps Web SDK Samples</title>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="This sample shows how create a simple HtmlMarker and add it to the map." />
+    <meta name="keywords" content="Microsoft maps, map, gis, API, SDK, html markers, markers, pins, pushpins, symbols, style, SVG, template, SVG template" />
+    <meta name="author" content="Microsoft Azure Maps" />
+    <meta name="version" content="1.0" />
+    <meta name="screenshot" content="screenshot.jpg" />
+
+    <!-- Add references to the Azure Maps Map control JavaScript and CSS files. -->
+    <link href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.css" rel="stylesheet" />
+    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.js"></script>
+
+    <style>
+        #myMap {
+            position: relative;
+            width: 100%;
+            min-width: 290px;
+            height: 600px;
+        }
+
+        .marker {
+            position: relative;
+            width: 4px; /* Thinner width for the pole */
+            height: 60px; /* Height of the pole */
+            background-color: DodgerBlue; /* Same color for the pole */
+            border-radius: 2px;
+        }
+
+        .flag {
+            position: absolute;
+            top: -15px; /* Adjust this to position the flag closer to the pole */
+            left: -20px; /* Center the flag above the pole */
+            width: 40px; /* Width of the flag */
+            height: 20px; /* Height of the flag */
+            background-color: DodgerBlue; /* Same color for the flag */
+            color: white; /* Text color */
+            text-align: center;
+            line-height: 20px; /* Center text vertically */
+            border-radius: 3px;
+            font-size: 12px; /* Font size for the flag text */
+        }
+    </style>
+
+    <script>
+        var map;
+
+        function getMap(latitude, longitude, ticketname) {
+            // Initialize a map instance.
+            map = new atlas.Map('myMap', {
+                view: 'Auto',
+
+                // Add authentication details for connecting to Azure Maps.
+                authOptions: {
+                    // Use Azure Maps primary subscription key.
+                    authType: 'subscriptionKey',
+                    subscriptionKey: 'here replace your Azure maps primary key'  // Replace with your Azure Maps primary key.
+                }
+            });
+
+            map.events.add('ready', function () {
+                // Create an HTML marker and add it to the map using latitude and longitude from the parent form
+                map.markers.add(new atlas.HtmlMarker({
+                    position: [longitude, latitude],  // Note: [longitude, latitude]
+                    htmlContent: `<div class="marker">
+                                        <div class="flag">${ticketname}</div>
+                                    </div>`
+                }));
+
+                // Set the map's center to the marker's position
+                map.setCamera({
+                    center: [longitude, latitude],
+                    zoom: 12 // Set an appropriate zoom level
+                });
+            });
+
+        }
+
+        // Function to load latitude and longitude from parent form
+        function loadCoordinatesFromParent() {
+            if (window.parent && window.parent.Xrm) {
+                // Get the parent form context using window.parent.Xrm
+                var formContext = window.parent.Xrm.Page;
+
+                // Here replace your field names accordingly. ajb_name, ajb_latitude, ajb_longitude
+                var ticketname = formContext.getAttribute("ajb_name").getValue();
+                // Get latitude and longitude values from the parent form fields
+                var latitude = formContext.getAttribute("ajb_latitude").getValue();
+                var longitude = formContext.getAttribute("ajb_longitude").getValue();
+
+                // Check if the values are available
+                if (latitude !== null && longitude !== null) {
+                    getMap(latitude, longitude, ticketname); // Pass latitude and longitude to the getMap function
+                } else {
+                    console.error("Latitude or Longitude is missing from the form.");
+                }
+            } else {
+                console.error("Unable to access the parent form.");
+            }
+        }
+
+        // Call the function to load coordinates once the page is fully loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            loadCoordinatesFromParent();  // Fetch coordinates from the parent form
+        });
+    </script>
+</head>
+<body>
+    <div id="myMap" style="position:relative;width:100%;min-width:290px;height:600px;"></div>
+
+    <fieldset style="width:calc(100% - 30px);min-width:290px;margin-top:10px;">
+        <legend>Simple HTML Marker</legend>
+        This sample shows how create a simple HtmlMarker and add it to the map.
+    </fieldset>
+</body>
+</html>
